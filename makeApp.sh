@@ -1,19 +1,20 @@
 #!/bin/sh
 
-echo "What should the Application be called (no spaces allowed e.g. GCal)?"
-read inputline
-name=$inputline
+# Usage:
+#   makeApp.sh <appname> <url> <iconurl>
+#
+# Examples:
+#   ./makeApp.sh Gmail https://gmail.com http://3.bp.blogspot.com/_rx1dHU9EQFY/THCcfaArRsI/AAAAAAAAB-k/-T1oLDCAEZg/s1600/gmail_logo_contact.png
+#   ./makeApp.sh Gmail file:///path/to/my/downloaded/icon
 
-echo "What is the url (e.g. https://www.google.com/calendar/render)?"
-read inputline
-url=$inputline
+# The app name. Example "Gmail". No spaces.
+name=$1
 
-echo "What is the full path to the icon (e.g. /Users/username/Desktop/icon.png)?"
-read inputline
-icon=$inputline
+# The url.
+url=$2
 
-
-
+# The icon url. Can be whatever curl can download (http://, file://, ...)
+iconUrl=$3
 
 chromePath="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
 appRoot="$HOME/Applications"
@@ -29,9 +30,14 @@ plistPath="$appRoot/$name.app/Contents/Info.plist"
 # make the directories
 mkdir -p  $resourcePath $execPath $profilePath
 
+# Download the icon file 
+icon=/tmp/$RANDOM
+curl $iconUrl > $icon
+
 # convert the icon and copy into Resources
 if [ -f $icon ] ; then
-    sips -s format tiff $icon --out $resourcePath/icon.tiff --resampleWidth 128 >& /dev/null
+    echo "Converting icon $icon"
+    sips -s format tiff $icon --out $resourcePath/icon.tiff --resampleWidth 128
     tiff2icns -noLarge $resourcePath/icon.tiff >& /dev/null
 fi
 
